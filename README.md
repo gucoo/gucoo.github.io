@@ -1,5 +1,13 @@
 # gucoo.github.io
 https://gucoo.github.io/
+
+
+
+
+
+
+
+
 ref
 https://d3-graph-gallery.com/scatter.html
 https://d3-graph-gallery.com/graph/bubble_template.html
