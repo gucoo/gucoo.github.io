@@ -4,11 +4,12 @@
 <!-- Load d3.js -->
 <script src="https://d3js.org/d3.v4.js"></script>
 
+<!-- Load d3-annotation -->
+<script src="https://rawgit.com/susielu/d3-annotation/master/d3-annotation.min.js"></script>
+
 <!-- Load color scale -->
 <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 
-<!-- Load d3-annotation -->
-<script src="https://rawgit.com/susielu/d3-annotation/master/d3-annotation.min.js"></script>
 
 <!-- A bit of CSS: change stroke color of circle on hover (white -> black) -->
 <style>
@@ -42,223 +43,68 @@ body {
    background-color: #ccc;
 }
 
-.bubbles {
-  stroke-width: 1px;
-  stroke: black;
-  opacity: .2
-}
 
-.bubbles:hover {
-  stroke: black;
-}
 
 </style>
 
 <body>
 
 <h2>World Fertility Rate</h2>
-<p>Scenes:Click on the below tab to see some intersting facts:</p>
+<p>Click on the below tab to see some intersting facts:</p>
 
 
 <div class="topnav">
-  <a class="active" href="index.html">Overview on Coutry Trend >></a>
+  <a href="index.html">Overview on Coutry Trend >></a>
 
   <!-- https://d3-graph-gallery.com/graph/line_filter.html  
      <a href="main.html">Main >> </a>  
       <a href="test.html">Country Trend >></a>-->
  
 
-  <a href="highest.html">Highest Country >></a>
+  <a class="active" href="highest.html">Highest Country >></a>
   <a href="lowest.html">Lowest Country >> </a>
 
   
-  <a href="test2.html">Income Group >> </a>
+  <a href="test.html">Income Group >> </a>
   <a href="#about">About >> </a>
 </div>
 
 <div style="padding-left:16px">
-  <h2>Overview</h2>
-  <p>Data for all years and countries</p>
-  <!-- Create a div where the graph will take place -->
-  <svg id="my_dataviz0" height=130 width=900></svg>
-  <div id="my_dataviz"></div>
+  <h2>Top Navigation Example</h2>
+  <p>Highest Fertility Rate in 2021</p>
+<!-- Initialize a select button -->
+<select id="selectButton">
+<option selected="selected">Niger</option>
+</select>
+<!-- Create a div where the graph will take place -->
+<div id="my_dataviz"></div>
 
 </div>
 
 </body>
 
-
 <script>
 
-//https://d3-graph-gallery.com/graph/lollipop_basic.html
-//https://d3-graph-gallery.com/graph/bubble_template.html
-//https://d3-graph-gallery.com/graph/custom_legend.html
+//https://d3-graph-gallery.com/graph/line_several_group.html
+//https://d3-graph-gallery.com/graph/line_filter.html
 
 // set the dimensions and margins of the graph
-var margin = {top: 10, right: 30, bottom: 30, left: 60},
+var margin = {top: 150, right: 30, bottom: 30, left: 60},
     width = 1700 - margin.left - margin.right,
-    height = 1400 - margin.top - margin.bottom;
-    // append the svg object to the body of the page
-    var svg = d3.select("#my_dataviz")
-      .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-        .attr("transform",
-              "translate(" + margin.left + "," + margin.top + ")")
+    height = 600 - margin.top - margin.bottom;
 
-//Read the data
-d3.csv("https://raw.githubusercontent.com/gucoo/gucoo.github.io/main/data3.csv", function(data) {
+// append the svg object to the body of the page
+var svg = d3.select("#my_dataviz")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
 
-  // Add X axis
-  var x = d3.scaleLinear()
-    .domain([0, 0])
-    .range([ 0, width ]);
-  svg.append("g")
-    .attr("class", "myXaxis")   // Note that here we give a class to the X axis, to be able to call it later and modify it
-    .attr("transform", "translate(0," + height + ")")
-    .call(d3.axisBottom(x))
-    .attr("opacity", "0")
-
-  // Add Y axis
-  var y = d3.scaleLinear()
-    .domain([0, 10])
-    .range([ height, 0]);
-  svg.append("g")
-    .call(d3.axisLeft(y));
-
-  //
-  var z = d3.scaleBand()
-    .domain(["","Low income","Lower middle income","Higher middle income","High income"])
-    .range([1,5]);
-
-  // Add a scale for bubble color
-  var myColor = d3.scaleOrdinal()
-    .domain(["","Latin America & Caribbean", "North America", "Sub-Saharan Africa", "East Asia & Pacific", "Middle East & North Africa","Europe & Central Asia","South Asia"])
-    .range(d3.schemeSet2);
-
-
-
-
-    // -1- Create a tooltip div that is hidden by default:
-  var tooltip = d3.select("#my_dataviz")
-    .append("div")
-      .style("opacity", 0)
-      .attr("class", "tooltip")
-      .style("background-color", "white")
-      .style("border", "solid")
-      .style("padding", "10px")
-      .style("color", "black")
-      .style("position", "absolute")
-      .style("border-radius", "5px")
-      .style("border-width", "1px")
-
-  // -2- Create 3 functions to show / update (when mouse move but stay on same circle) / hide the tooltip
-  var showTooltip = function(d) {
-    tooltip
-      .transition()
-      .duration(200)
-    tooltip
-      .style("opacity", 1)
-      .html(d.Year+"<br>Country: " + d.CountryName +
-                    "<br>Region: "+d.Region+"<br>IncomeGroup: "
-                      +d.IncomeGroup+"<br>Rate: "+d.Value)
-
-      .style("left", (d3.mouse(this)[0]+200) + "px")
-      .style("top", (d3.mouse(this)[1]+200) + "px")
-  }
-  var moveTooltip = function(d) {
-    tooltip
-      .style("left", (d3.mouse(this)[0]+200) + "px")
-      .style("top", (d3.mouse(this)[1]+200) + "px")
-  }
-  var hideTooltip = function(d) {
-    tooltip
-      .transition()
-      .duration(200)
-      .style("opacity", 0)
-  }
-
-
-
-
-  // Add dots
-  svg.append('g')
-    .selectAll("dot")
-    .data(data)
-    .enter()
-    .append("circle")
-       .attr("cx", function (d) { return x(d.Year); } )
-       .attr("cy", function (d) { return y(d.Value); } )
-       .attr("r", function (d) { return  z(d.IncomeGroup); })
-      .style("fill", function (d) { return myColor(d.Region);})
-    .on("mouseover", showTooltip )
-    .on("mousemove", moveTooltip )
-    .on("mouseleave", hideTooltip )
-  
-  // new X axis
-  x.domain([1960, 2024])
-  svg.select(".myXaxis")
-    .transition()
-    .duration(200)
-    .attr("opacity", "1")
-    .call(d3.axisBottom(x));
-
-  svg.selectAll("circle")
-    .transition()
-    .delay(function(d,i){return(i/5)})
-    .duration(100)
-    .attr("cx", function (d) { return x(d.Year); } )
-    .attr("cy", function (d) { return y(d.Value); } )
-    .attr("r", function (d) { return z(d.IncomeGroup); })
-    .style("fill", function (d) { return myColor(d.Region); } )
- 
-//legend 1
-
-d3.select("#my_dataviz0").selectAll("mydots")
-  .data(["","Latin America & Caribbean", "North America", "Sub-Saharan Africa", "East Asia & Pacific", "Middle East & North Africa","Europe & Central Asia","South Asia"])
-  .enter()
-  .append("circle")
-    .attr("cx", 10)
-    .attr("cy", function(d,i){ return 10 + i*15}) // 100 is where the first dot appears. 25 is the distance between dots
-    .attr("r", 3)
-    .style("fill", function(d){ return myColor(d)})
-
-d3.select("#my_dataviz0").selectAll("mylabels")
-  .data(["NA","Latin America & Caribbean", "North America", "Sub-Saharan Africa", "East Asia & Pacific", "Middle East & North Africa","Europe & Central Asia","South Asia"])
-  .enter()
-  .append("text")
-    .attr("x", 30)
-    .attr("y", function(d,i){ return 10 + i*15}) // 100 is where the first dot appears. 25 is the distance between dots
-    .text(function(d){ return d})
-    .style("fill", function(d){ return myColor(d)})
-    .attr("text-anchor", "left")
-    .style("alignment-baseline", "middle")
-
-//legend 2
-
-d3.select("#my_dataviz0").selectAll("mydots")
-  .data(["","Low income","Lower middle income","Higher middle income","High income"])
-  .enter()
-  .append("circle")
-    .attr("cx", 250)
-    .attr("cy", function(d,i){ return 10 + i*15}) // 100 is where the first dot appears. 25 is the distance between dots
-    .attr("r", function (d) { return z(d); })
-
-
-d3.select("#my_dataviz0").selectAll("mylabels")
-  .data(["NA","Low income","Lower middle income","Higher middle income","High income"])
-  .enter()
-  .append("text")
-    .attr("x", 270)
-    .attr("y", function(d,i){ return 10+ i*15}) // 100 is where the first dot appears. 25 is the distance between dots
-    .text(function(d){ return d})
-    .attr("text-anchor", "left")
-    .style("alignment-baseline", "middle")
-
-//////////////////////////////////////////////////////////////////annotation 1
-const annotations = [
-  {
+annotations = 
+[
+    {
     note: { 
       label: "1985 Yemen 8.864",
       title: "1.1960 -2021 History highest"
@@ -266,49 +112,159 @@ const annotations = [
 },
  color: ["red"],
  //type: d3.annotationCalloutCircle,
-    x: 690,
-    y: 160,
+    x: 770,
+    y: 120,
+    dy: -12,
+    dx: -12,
+    subject: { radius: 9, radiusPadding: 5 },
+    connector: { end: "arrow" },
+  },
+{
+    note: { 
+      label: "2021 Hong Knog 0.772",
+      title: "2.1960 -2021 History lowest"},
+ color: ["red"],
+ //type: d3.annotationCalloutCircle,
+    x: 1680,
+    y: 500,
     dy: -12,
     dx: -12,
     subject: { radius: 9, radiusPadding: 5 },
     connector: { end: "arrow" },
   },
 
- {
+{
     note: { 
-      label: "2021 Hong Knog 0.772",
-      title: "2.1960 -2021 History lowest"},
- color: ["red"],
+      label: "Current: show",
+      title: "show"
+
+},
+ color: ["blue"],
  //type: d3.annotationCalloutCircle,
-    x: 1600,
-    y: 1270,
-    dy: 12,
-    dx: -12,
+    x: 1300,
+    y: 180,
+    dy: -50,
+    dx: 50,
     subject: { radius: 9, radiusPadding: 5 },
     connector: { end: "arrow" },
-  },
-
-
-{
-    note: {
-      label: "Dropping by years",
-      title: "3.Trend"
-    },
-    connector: {
-      end: "arrow",        // none, or arrow or dot
-      type: "curve",       // Line or curve
-      points: 3,           // Number of break in the curve
-      lineType : "horizontal"
-    },
-    color: ["blue"],
-    x: 1200,
-    y: 300,
-    dy: -220,
-    dx: -220
   }
+]
+ 
+
+//Read the data
+d3.csv("https://raw.githubusercontent.com/gucoo/gucoo.github.io/main/data3.csv", function(data) {
+
+    // List of groups (here I have one group per column)
+    var allGroup = d3.map(data, function(d){return(d.CountryName)}).keys()
+    console.log(allGroup);
+    // add the options to the button
+    d3.select("#selectButton")
+      .selectAll('myOptions')
+     	.data(allGroup)
+      .enter()
+    	.append('option')
+      .text(function (d) { return d; }) // text showed in the menu
+      .attr("value", function (d) { return d; }) // corresponding value returned by the button
+
+   // Add a scale for bubble color
+  var myColor = d3.scaleOrdinal()
+    .domain(["","Latin America & Caribbean", "North America", "Sub-Saharan Africa", "East Asia & Pacific", "Middle East & North Africa","Europe & Central Asia","South Asia"])
+    .range(d3.schemeSet2);
 
 
-];
+    // Add X axis --> it is a date format
+    var x = d3.scaleLinear()
+      .domain(d3.extent(data, function(d) { return d.Year; }))
+      .range([ 0, width ]);
+    svg.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x).ticks(63));
+
+    // Add Y axis
+    var y = d3.scaleLinear()
+      .domain([0, d3.max(data, function(d) { return d.Value; })])
+      .range([ height, 0 ]);
+    svg.append("g")
+      .call(d3.axisLeft(y));
+
+    // Initialize line with first group of the list
+    var line = svg
+      .append('g')
+      .append("path")
+        .datum(data.filter(function(d){return d.CountryName=="Niger"}))//selectedGroup[0]
+        .attr("d", d3.line()
+          .x(function(d) { return x(d.Year) })
+          .y(function(d) { return y(d.Value) })
+        )
+        .attr("stroke", function(d){ return myColor(d[0].Region); })
+        .style("stroke-width", 4)
+        .style("fill", function(d){ return "grey"; })
+
+      annotations[2].note.title = "3.Showing: "+"Niger";
+      annotations[2].note.label = "\n"+"Sub-SaharanAfrica " +"\n--- "+"Low income";
+
+    svg.selectAll("mycircle")
+    .append('g')   
+    .data(data.filter(function(d){return d.CountryName=="Yemen, Rep."}))//selectedGroup[0]
+    .enter()
+    .append("circle")
+    .attr("cx", function(d) { return x(d.Year); })
+    .attr("cy", function(d) { return y(d.Value); })
+    .attr("r", "4")
+    .style("fill", function (d) { return myColor(d.Region);})
+    .attr("stroke", "black")
+
+    svg.selectAll("mycircle")
+    .append('g')   
+    .data(data.filter(function(d){return d.CountryName=="Hong Kong SAR, China"}))//selectedGroup[0]
+    .enter()
+    .append("circle")
+    .attr("cx", function(d) { return x(d.Year); })
+    .attr("cy", function(d) { return y(d.Value); })
+    .attr("r", "4")
+    .style("fill", function (d) { return myColor(d.Region);})
+    .attr("stroke", "black")
+
+
+  
+    // A function that update the chart
+    function update(selectedGroup) {
+
+      // Create new data with the selection?
+      var dataFilter = data.filter(function(d){return d.CountryName==selectedGroup})
+      console.log(dataFilter);
+
+      //annotations[3]['color']="black";
+      console.log(annotations[2].note.label);
+      annotations[2].note.title = "3.Showing: "+selectedGroup;
+      annotations[2].note.label = "\n"+dataFilter[0].Region +"\n--- "+dataFilter[0].IncomeGroup;
+
+d3.select("#my_dataviz")
+.select("svg")
+  .append("g")
+  .call(makeAnnotations);
+
+      // Give these new data to update line
+      line
+          .datum(dataFilter)
+          .transition()
+          .duration(1000)
+          .attr("d", d3.line()
+            .x(function(d) { return x(d.Year) })
+            .y(function(d) { return y(d.Value) })
+          )
+          .attr("stroke", function(d){ return myColor(d[0].Region); })
+    }
+
+    // When the button is changed, run the updateChart function
+    d3.select("#selectButton").on("change", function(d) {
+        // recover the option that has been chosen
+        var selectedOption = d3.select(this).property("value")
+        // run the updateChart function with this selected option
+        update(selectedOption)
+    })
+
+
 
 // Add annotation to the chart
 const makeAnnotations = d3.annotation()
@@ -319,9 +275,10 @@ d3.select("#my_dataviz")
 .select("svg")
   .append("g")
   .call(makeAnnotations).editMode(true);
-
-
+    
 
 })
 
+
 </script>
+
