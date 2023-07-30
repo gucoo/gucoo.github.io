@@ -49,21 +49,21 @@ body {
 
 <body>
 
-<h2>World Fertility Rate</h2>
-<p>Click on the below tab to see some intersting facts:</p>
+<h2>1960 - 2021 World Fertility Rate Birth per Woman</h2>
+<p>Scenes:Click on the below tab to see some intersting facts:</p>
 
 <div class="topnav">
-  <a href="index.html">Overview on Coutry Trend >></a>
-  <a class="active" href="highest.html">Highest Country >></a>
-  <a href="lowest.html">Lowest Country >> </a>
-  <a href="income.html">Income Group >> </a>
-  <a href="region.html">Region >> </a>
+  <a href="index.html">1.Overview on Coutry Trend >></a>
+  <a class="active" href="highest.html">2.Recent Highest Country >></a>
+  <a href="lowest.html">3.Recent Lowest Country >> </a>  
+  <a href="income.html">4.Income Group >> </a>
+  <a href="region.html">5.Region</a>
 </div>
 
 <div style="padding-left:16px">
-  <h2>Top Navigation Example</h2>
+  <h2> 2021 Recent Highest Country</h2>
 <select id="selectButton">
-<option selected="selected">Niger</option>
+<option selected="selected">Select another Country to Compare</option>
 </select>
   <p>Highest Fertility Rate in 2021</p>
 <!-- Initialize a select button -->
@@ -85,7 +85,7 @@ body {
 // set the dimensions and margins of the graph
 var margin = {top: 150, right: 30, bottom: 30, left: 60},
     width = 1700 - margin.left - margin.right,
-    height = 600 - margin.top - margin.bottom;
+    height = 750 - margin.top - margin.bottom;
 
 // append the svg object to the body of the page
 var svg = d3.select("#my_dataviz")
@@ -100,51 +100,49 @@ annotations =
 [
     {
     note: { 
-      label: "1985 Yemen 8.864",
+      label: "1985 Yemen, Low Income 8.864",
       title: "1.1960 -2021 History highest"
 
 },
  color: ["red"],
- //type: d3.annotationCalloutCircle,
-    x: 770,
-    y: 120,
-    dy: -12,
-    dx: -12,
+ type: d3.annotationCalloutCircle,
+    x: 720,
+    y: 145,
+    dy: -20,
+    dx: -20,
     subject: { radius: 9, radiusPadding: 5 },
     connector: { end: "arrow" },
   },
 {
     note: { 
-      label: "2021 Hong Knog 0.772",
+      label: "2021 Hong Knog, High Income 0.772",
       title: "2.1960 -2021 History lowest"},
  color: ["red"],
- //type: d3.annotationCalloutCircle,
-    x: 1680,
-    y: 500,
-    dy: -12,
-    dx: -12,
+ type: d3.annotationCalloutCircle,
+    x: 1670,
+    y: 670,
+    dy: -45,
+    dx: -45,
     subject: { radius: 9, radiusPadding: 5 },
     connector: { end: "arrow" },
   },
 
 {
     note: { 
-      label: "Current: show",
+      label: "Comparing",
       title: "show",
-bgPadding: 20,
+      bgPadding: 20,
 
 },
- color: ["blue"],
-
- type: d3.annotationCalloutRect,
-    x: 1450,
-    y: 70,
-    //dy: -70,
-    //dx: 0,
-    //subject: { radius: 400, radiusPadding: 400 },
-subject: {
-      width: 170,
-      height: 140
+ color: ["black"],
+ //type: d3.annotationCalloutRect,
+    x: 60,
+    y: 20,
+    //dy: -10,
+    //dx: -0,
+    subject: {
+      width: 900,
+      height: 240
     },
     //connector: { end: "arrow" },
   },
@@ -155,14 +153,14 @@ subject: {
       title: "show"
 
 },
- color: "#e78ac3",
- //type: d3.annotationCalloutCircle,
-    x: 470,
-    y: 220,
+ color: "#9999CC",
+ //type: d3.annotationCalloutRect,
+    x: 1650,
+    y: 250,
     dy: -77,
     dx: -77,
-    subject: { radius: 9, radiusPadding: 5 },
-    connector: { end: "arrow" },
+  
+    //connector: { end: "arrow" },
   }
 ]
  
@@ -202,7 +200,11 @@ d3.csv("https://raw.githubusercontent.com/gucoo/gucoo.github.io/main/data3.csv",
       .range([ height, 0 ]);
     svg.append("g")
       .call(d3.axisLeft(y));
-
+    
+    // Add Z axis
+  var z = d3.scaleBand()
+    .domain(["","Low income","Lower middle income","Upper middle income","High income"])
+    .range([1,5]);
 
 
 //legend 1
@@ -227,6 +229,66 @@ d3.select("#my_dataviz0").selectAll("mylabels")
     .attr("text-anchor", "left")
     .style("alignment-baseline", "middle")
 
+//legend 2
+
+d3.select("#my_dataviz0").selectAll("mydots")
+  .data(["","Low income","Lower middle income","Upper middle income","High income"])
+  .enter()
+  .append("circle")
+    .attr("cx", 250)
+    .attr("cy", function(d,i){ return 10 + i*15}) // 100 is where the first dot appears. 25 is the distance between dots
+    .attr("r", function (d) { return z(d); })
+
+
+d3.select("#my_dataviz0").selectAll("mylabels")
+  .data(["NA","Low income","Lower middle income","Higher middle income","High income"])
+  .enter()
+  .append("text")
+    .attr("x", 270)
+    .attr("y", function(d,i){ return 10+ i*15}) // 100 is where the first dot appears. 25 is the distance between dots
+    .text(function(d){ return d})
+    .attr("text-anchor", "left")
+    .style("alignment-baseline", "middle")
+
+
+ // -1- Create a tooltip div that is hidden by default:
+  var tooltip = d3.select("#my_dataviz")
+    .append("div")
+      .style("opacity", 0)
+      .attr("class", "tooltip")
+      .style("background-color", "white")
+      .style("border", "solid")
+      .style("padding", "10px")
+      .style("color", "black")
+      .style("position", "absolute")
+      .style("border-radius", "5px")
+      .style("border-width", "1px")
+// -2- Create 3 functions to show / update (when mouse move but stay on same circle) / hide the tooltip
+  var showTooltip = function(d) {
+    tooltip
+      .transition()
+      .duration(200)
+    tooltip
+      .style("opacity", 1)
+      .html(d.Year+"<br>Country: " + d.CountryName +
+                    "<br>Region: "+d.Region+"<br>IncomeGroup: "
+                      +d.IncomeGroup+"<br>Rate: "+d.Value)
+
+      .style("left", (d3.mouse(this)[0]+200) + "px")
+      .style("top", (d3.mouse(this)[1]+200) + "px")
+  }
+  var moveTooltip = function(d) {
+    tooltip
+      .style("left", (d3.mouse(this)[0]+200) + "px")
+      .style("top", (d3.mouse(this)[1]+200) + "px")
+  }
+  var hideTooltip = function(d) {
+    tooltip
+      .transition()
+      .duration(200)
+      .style("opacity", 0)
+  }
+
 
     // Initialize line with first group of the list
 
@@ -238,25 +300,28 @@ d3.select("#my_dataviz0").selectAll("mylabels")
           .x(function(d) { return x(d.Year) })
           .y(function(d) { return y(d.Value) })
         )
-        .attr("stroke", function(d){ return myColor(d[0].Region); })
+        .attr("stroke", "black")
         .style("stroke-width", 4)
-        .style("fill", function(d){ return "grey"; })
+        .style("fill", "none")
 
-      annotations[2].note.title = "4.Comparing: "+"Niger";
-      annotations[2].note.label = "\n"+"Sub-SaharanAfrica " +"\n--- "+"Low income";
+      annotations[2].note.title = "***********Comparing*************";
+      annotations[2].note.label = "Select the Country to Start";
 
-    svg.selectAll("mycircle")
+    svg.selectAll("dot")
     .append('g')   
     .data(data.filter(function(d){return d.CountryName=="Yemen, Rep."}))//selectedGroup[0]
     .enter()
     .append("circle")
     .attr("cx", function(d) { return x(d.Year); })
     .attr("cy", function(d) { return y(d.Value); })
-    .attr("r", "4")
+    .attr("r", function (d) { return  z(d.IncomeGroup); })
     .style("fill", function (d) { return myColor(d.Region);})
-    .attr("stroke", "black")
+    .attr("stroke", "none")
+    .on("mouseover", showTooltip )
+    .on("mousemove", moveTooltip )
+    .on("mouseleave", hideTooltip )
 
-    svg.selectAll("mycircle")
+    svg.selectAll("dot")
     .append('g')   
     .data(data.filter(function(d){return d.CountryName=="Hong Kong SAR, China"}))//selectedGroup[0]
     .enter()
@@ -265,8 +330,26 @@ d3.select("#my_dataviz0").selectAll("mylabels")
     .attr("cy", function(d) { return y(d.Value); })
     .attr("r", "4")
     .style("fill", function (d) { return myColor(d.Region);})
-    .attr("stroke", "black")
+    .attr("stroke", "none")
+    .on("mouseover", showTooltip )
+    .on("mousemove", moveTooltip )
+    .on("mouseleave", hideTooltip )
 
+
+    svg.selectAll("dot")
+    .append('g')   
+    .data(data.filter(function(d){return d.CountryName=="Niger"}))//selectedGroup[0]
+    .enter()
+    .append("circle")
+    .attr("cx", function(d) { return x(d.Year); })
+    .attr("cy", function(d) { return y(d.Value); })
+    .attr("r", "4")
+    .style("fill", function (d) { return myColor(d.Region);})
+    .attr("stroke", "none")
+    .on("mouseover", showTooltip )
+    .on("mousemove", moveTooltip )
+    .on("mouseleave", hideTooltip )
+    
     svg
       .append('g')
       .append("path")
@@ -278,8 +361,8 @@ d3.select("#my_dataviz0").selectAll("mylabels")
         .attr("stroke", function(d){ return myColor(d[0].Region); })
         .style("stroke-width", 4)
         .style("fill", function(d){ return "none"; })
-
-      annotations[3].note.title = "3.Showing: "+"Niger";
+   
+      annotations[3].note.title = "3.2021 Recent Highest: "+"Niger";
       annotations[3].note.label = "\n"+"Sub-SaharanAfrica " +"\n--- "+"Low income";
       
   
@@ -292,8 +375,8 @@ d3.select("#my_dataviz0").selectAll("mylabels")
 
       
       console.log(annotations[2]);
-      annotations[2].note.title = "4.Comparing: "+selectedGroup;
-      annotations[2].note.label = "\n"+dataFilter[0].Region +"\n--- "+dataFilter[0].IncomeGroup;
+      annotations[2].note.title = "*********Comparing:******** ";
+      annotations[2].note.label = selectedGroup +", "+ dataFilter[0].Region +", "+ dataFilter[0].IncomeGroup;
       
       
      d3.select("#my_dataviz")
@@ -310,8 +393,75 @@ d3.select("#my_dataviz0").selectAll("mylabels")
             .x(function(d) { return x(d.Year) })
             .y(function(d) { return y(d.Value) })
           )
-          .attr("stroke", function(d){ return myColor(d[0].Region); })
+          .attr("stroke", "black")//function(d){ return myColor(d[0].Region); })
+
+  svg.selectAll("circle").remove();
+
+    svg.selectAll("dot")
+    .append('g')   
+    .data(data.filter(function(d){return d.CountryName=="Yemen, Rep."}))//selectedGroup[0]
+    .enter()
+    .append("circle")
+    .attr("cx", function(d) { return x(d.Year); })
+    .attr("cy", function(d) { return y(d.Value); })
+    .attr("r", function (d) { return  z(d.IncomeGroup); })
+    .style("fill", function (d) { return myColor(d.Region);})
+    .attr("stroke", "none")
+    .on("mouseover", showTooltip )
+    .on("mousemove", moveTooltip )
+    .on("mouseleave", hideTooltip )
+
+    svg.selectAll("dot")
+    .append('g')   
+    .data(data.filter(function(d){return d.CountryName=="Hong Kong SAR, China"}))//selectedGroup[0]
+    .enter()
+    .append("circle")
+    .attr("cx", function(d) { return x(d.Year); })
+    .attr("cy", function(d) { return y(d.Value); })
+    .attr("r", "4")
+    .style("fill", function (d) { return myColor(d.Region);})
+    .attr("stroke", "none")
+    .on("mouseover", showTooltip )
+    .on("mousemove", moveTooltip )
+    .on("mouseleave", hideTooltip )
+
+
+    svg.selectAll("dot")
+    .append('g')   
+    .data(data.filter(function(d){return d.CountryName=="Niger"}))//selectedGroup[0]
+    .enter()
+    .append("circle")
+    .attr("cx", function(d) { return x(d.Year); })
+    .attr("cy", function(d) { return y(d.Value); })
+    .attr("r", "4")
+    .style("fill", function (d) { return myColor(d.Region);})
+    .attr("stroke", "none")
+    .on("mouseover", showTooltip )
+    .on("mousemove", moveTooltip )
+    .on("mouseleave", hideTooltip )
+
+
+
+
+
+
+   svg.selectAll("dot")
+    .append('g')
+    .data(data.filter(function(d){return d.CountryName==selectedGroup}))//selectedGroup[0]
+    .enter()
+    .append("circle")
+    .attr("cx", function(d) { return x(d.Year); })
+    .attr("cy", function(d) { return y(d.Value); })
+    .attr("r", "4")
+    .style("fill", function (d) { return myColor(d.Region);})
+    .attr("stroke", "none")
+    .on("mouseover", showTooltip )
+    .on("mousemove", moveTooltip )
+    .on("mouseleave", hideTooltip )
+
     }
+
+
 
     // When the button is changed, run the updateChart function
     d3.select("#selectButton").on("change", function(d) {
