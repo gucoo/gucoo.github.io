@@ -52,31 +52,25 @@ body {
 <h2>World Fertility Rate</h2>
 <p>Click on the below tab to see some intersting facts:</p>
 
-
 <div class="topnav">
   <a href="index.html">Overview on Coutry Trend >></a>
-
-  <!-- https://d3-graph-gallery.com/graph/line_filter.html  
-     <a href="main.html">Main >> </a>  
-      <a href="test.html">Country Trend >></a>-->
- 
-
   <a class="active" href="highest.html">Highest Country >></a>
   <a href="lowest.html">Lowest Country >> </a>
-
-  
-  <a href="test.html">Income Group >> </a>
-  <a href="#about">About >> </a>
+  <a href="income.html">Income Group >> </a>
+  <a href="region.html">Region >> </a>
 </div>
 
 <div style="padding-left:16px">
   <h2>Top Navigation Example</h2>
-  <p>Highest Fertility Rate in 2021</p>
-<!-- Initialize a select button -->
 <select id="selectButton">
 <option selected="selected">Niger</option>
 </select>
+  <p>Highest Fertility Rate in 2021</p>
+<!-- Initialize a select button -->
+
 <!-- Create a div where the graph will take place -->
+
+<svg id="my_dataviz0" height=130 width=900></svg>
 <div id="my_dataviz"></div>
 
 </div>
@@ -136,15 +130,37 @@ annotations =
 {
     note: { 
       label: "Current: show",
-      title: "show"
+      title: "show",
+bgPadding: 20,
 
 },
  color: ["blue"],
+
+ type: d3.annotationCalloutRect,
+    x: 1450,
+    y: 70,
+    //dy: -70,
+    //dx: 0,
+    //subject: { radius: 400, radiusPadding: 400 },
+subject: {
+      width: 170,
+      height: 140
+    },
+    //connector: { end: "arrow" },
+  },
+
+{
+    note: { 
+      label: "Current: show",
+      title: "show"
+
+},
+ color: "#e78ac3",
  //type: d3.annotationCalloutCircle,
-    x: 1300,
-    y: 180,
-    dy: -50,
-    dx: 50,
+    x: 470,
+    y: 220,
+    dy: -77,
+    dx: -77,
     subject: { radius: 9, radiusPadding: 5 },
     connector: { end: "arrow" },
   }
@@ -155,7 +171,7 @@ annotations =
 d3.csv("https://raw.githubusercontent.com/gucoo/gucoo.github.io/main/data3.csv", function(data) {
 
     // List of groups (here I have one group per column)
-    var allGroup = d3.map(data, function(d){return(d.CountryName)}).keys()
+    var allGroup = d3.map(data.filter(function(d){return (d.Region!="")}), function(d){return(d.CountryName)}).keys()
     console.log(allGroup);
     // add the options to the button
     d3.select("#selectButton")
@@ -168,7 +184,7 @@ d3.csv("https://raw.githubusercontent.com/gucoo/gucoo.github.io/main/data3.csv",
 
    // Add a scale for bubble color
   var myColor = d3.scaleOrdinal()
-    .domain(["","Latin America & Caribbean", "North America", "Sub-Saharan Africa", "East Asia & Pacific", "Middle East & North Africa","Europe & Central Asia","South Asia"])
+    .domain(["Latin America & Caribbean", "North America", "Sub-Saharan Africa", "East Asia & Pacific", "Middle East & North Africa","Europe & Central Asia","South Asia"])
     .range(d3.schemeSet2);
 
 
@@ -187,11 +203,37 @@ d3.csv("https://raw.githubusercontent.com/gucoo/gucoo.github.io/main/data3.csv",
     svg.append("g")
       .call(d3.axisLeft(y));
 
+
+
+//legend 1
+
+d3.select("#my_dataviz0").selectAll("mydots")
+  .data(["Latin America & Caribbean", "North America", "Sub-Saharan Africa", "East Asia & Pacific", "Middle East & North Africa","Europe & Central Asia","South Asia"])
+  .enter()
+  .append("circle")
+    .attr("cx", 10)
+    .attr("cy", function(d,i){ return 10 + i*15}) // 100 is where the first dot appears. 25 is the distance between dots
+    .attr("r", 3)
+    .style("fill", function(d){ return myColor(d)})
+
+d3.select("#my_dataviz0").selectAll("mylabels")
+  .data(["Latin America & Caribbean", "North America", "Sub-Saharan Africa", "East Asia & Pacific", "Middle East & North Africa","Europe & Central Asia","South Asia"])
+  .enter()
+  .append("text")
+    .attr("x", 30)
+    .attr("y", function(d,i){ return 10 + i*15}) // 100 is where the first dot appears. 25 is the distance between dots
+    .text(function(d){ return d})
+    .style("fill", function(d){ return myColor(d)})
+    .attr("text-anchor", "left")
+    .style("alignment-baseline", "middle")
+
+
     // Initialize line with first group of the list
-    var line = svg
+
+   var line = svg
       .append('g')
       .append("path")
-        .datum(data.filter(function(d){return d.CountryName=="Niger"}))//selectedGroup[0]
+        .datum(data.filter(function(d){return d.CountryName=="Niger"}))//selectedGroup[0]//"Hong Kong SAR, China"
         .attr("d", d3.line()
           .x(function(d) { return x(d.Year) })
           .y(function(d) { return y(d.Value) })
@@ -200,7 +242,7 @@ d3.csv("https://raw.githubusercontent.com/gucoo/gucoo.github.io/main/data3.csv",
         .style("stroke-width", 4)
         .style("fill", function(d){ return "grey"; })
 
-      annotations[2].note.title = "3.Showing: "+"Niger";
+      annotations[2].note.title = "4.Comparing: "+"Niger";
       annotations[2].note.label = "\n"+"Sub-SaharanAfrica " +"\n--- "+"Low income";
 
     svg.selectAll("mycircle")
@@ -225,24 +267,39 @@ d3.csv("https://raw.githubusercontent.com/gucoo/gucoo.github.io/main/data3.csv",
     .style("fill", function (d) { return myColor(d.Region);})
     .attr("stroke", "black")
 
+    svg
+      .append('g')
+      .append("path")
+        .datum(data.filter(function(d){return (d.CountryName=="Niger" && d.Region!="")}))//selectedGroup[0]
+        .attr("d", d3.line()
+          .x(function(d) { return x(d.Year) })
+          .y(function(d) { return y(d.Value) })
+        )
+        .attr("stroke", function(d){ return myColor(d[0].Region); })
+        .style("stroke-width", 4)
+        .style("fill", function(d){ return "none"; })
 
+      annotations[3].note.title = "3.Showing: "+"Niger";
+      annotations[3].note.label = "\n"+"Sub-SaharanAfrica " +"\n--- "+"Low income";
+      
   
     // A function that update the chart
     function update(selectedGroup) {
 
       // Create new data with the selection?
-      var dataFilter = data.filter(function(d){return d.CountryName==selectedGroup})
+      var dataFilter = data.filter(function(d){return (d.CountryName==selectedGroup && d.Region!="")})
       console.log(dataFilter);
 
-      //annotations[3]['color']="black";
-      console.log(annotations[2].note.label);
-      annotations[2].note.title = "3.Showing: "+selectedGroup;
+      
+      console.log(annotations[2]);
+      annotations[2].note.title = "4.Comparing: "+selectedGroup;
       annotations[2].note.label = "\n"+dataFilter[0].Region +"\n--- "+dataFilter[0].IncomeGroup;
-
-d3.select("#my_dataviz")
-.select("svg")
-  .append("g")
-  .call(makeAnnotations);
+      
+      
+     d3.select("#my_dataviz")
+     .select("svg")
+     .append("g")
+     .call(makeAnnotations);
 
       // Give these new data to update line
       line
@@ -267,7 +324,7 @@ d3.select("#my_dataviz")
 
 
 // Add annotation to the chart
-const makeAnnotations = d3.annotation()
+var makeAnnotations = d3.annotation()
   .annotations(annotations);
 
 
@@ -275,6 +332,8 @@ d3.select("#my_dataviz")
 .select("svg")
   .append("g")
   .call(makeAnnotations).editMode(true);
+
+
     
 
 })
