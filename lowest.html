@@ -4,6 +4,9 @@
 <!-- Load d3.js -->
 <script src="https://d3js.org/d3.v4.js"></script>
 
+<!-- Load d3-annotation -->
+<script src="https://rawgit.com/susielu/d3-annotation/master/d3-annotation.min.js"></script>
+
 <!-- Load color scale -->
 <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 
@@ -49,21 +52,12 @@ body {
 <h2>World Fertility Rate</h2>
 <p>Click on the below tab to see some intersting facts:</p>
 
-
 <div class="topnav">
   <a href="index.html">Overview on Coutry Trend >></a>
-
-  <!-- https://d3-graph-gallery.com/graph/line_filter.html  
-     <a href="main.html">Main >> </a>  
-      <a href="test.html">Country Trend >></a>-->
- 
-
   <a href="highest.html">Highest Country >></a>
   <a class="active" href="lowest.html">Lowest Country >> </a>
-
-  
-  <a href="test.html">Income Group >> </a>
-  <a href="#about">About >> </a>
+  <a href="income.html">Income Group >> </a>
+  <a href="region.html">Region >> </a>
 </div>
 
 <div style="padding-left:16px">
@@ -71,9 +65,7 @@ body {
   <p>Lowest Fertility Rate in 2021</p>
 <!-- Initialize a select button -->
 <select id="selectButton">
-<option selected="selected">
-Hong Kong SAR, China
-</option>
+<option selected="selected">Hong Kong SAR, China</option>
 </select>
 <!-- Create a div where the graph will take place -->
 <div id="my_dataviz"></div>
@@ -88,9 +80,9 @@ Hong Kong SAR, China
 //https://d3-graph-gallery.com/graph/line_filter.html
 
 // set the dimensions and margins of the graph
-var margin = {top: 10, right: 30, bottom: 30, left: 60},
+var margin = {top: 150, right: 30, bottom: 30, left: 60},
     width = 1700 - margin.left - margin.right,
-    height = 400 - margin.top - margin.bottom;
+    height = 600 - margin.top - margin.bottom;
 
 // append the svg object to the body of the page
 var svg = d3.select("#my_dataviz")
@@ -101,11 +93,82 @@ var svg = d3.select("#my_dataviz")
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")");
 
+annotations = 
+[
+    {
+    note: { 
+      label: "1985 Yemen 8.864",
+      title: "1.1960 -2021 History highest"
+
+},
+ color: ["red"],
+ //type: d3.annotationCalloutCircle,
+    x: 770,
+    y: 120,
+    dy: -12,
+    dx: -12,
+    subject: { radius: 9, radiusPadding: 5 },
+    connector: { end: "arrow" },
+  },
+{
+    note: { 
+      label: "2021 Hong Knog 0.772",
+      title: "2.1960 -2021 History lowest"},
+ color: ["red"],
+ //type: d3.annotationCalloutCircle,
+    x: 1680,
+    y: 500,
+    dy: -12,
+    dx: -12,
+    subject: { radius: 9, radiusPadding: 5 },
+    connector: { end: "arrow" },
+  },
+
+{
+    note: { 
+      label: "Current: show",
+      title: "show",
+bgPadding: 20,
+
+},
+ color: ["blue"],
+
+ type: d3.annotationCalloutRect,
+    x: 1450,
+    y: 70,
+    //dy: -70,
+    //dx: 0,
+    //subject: { radius: 400, radiusPadding: 400 },
+subject: {
+      width: 170,
+      height: 140
+    },
+    //connector: { end: "arrow" },
+  },
+
+{
+    note: { 
+      label: "Current: show",
+      title: "show"
+
+},
+ color: "#e78ac3",
+ //type: d3.annotationCalloutCircle,
+    x: 470,
+    y: 220,
+    dy: -77,
+    dx: -77,
+    subject: { radius: 9, radiusPadding: 5 },
+    connector: { end: "arrow" },
+  }
+]
+ 
+
 //Read the data
 d3.csv("https://raw.githubusercontent.com/gucoo/gucoo.github.io/main/data3.csv", function(data) {
 
     // List of groups (here I have one group per column)
-    var allGroup = d3.map(data, function(d){return(d.CountryName)}).keys()
+    var allGroup = d3.map(data.filter(function(d){return (d.Region!="")}), function(d){return(d.CountryName)}).keys()
     console.log(allGroup);
     // add the options to the button
     d3.select("#selectButton")
@@ -116,10 +179,11 @@ d3.csv("https://raw.githubusercontent.com/gucoo/gucoo.github.io/main/data3.csv",
       .text(function (d) { return d; }) // text showed in the menu
       .attr("value", function (d) { return d; }) // corresponding value returned by the button
 
-    // A color scale: one color for each group
-    var myColor = d3.scaleOrdinal()
-      .domain(allGroup)
-      .range(d3.schemeSet2);
+   // Add a scale for bubble color
+  var myColor = d3.scaleOrdinal()
+    .domain(["Latin America & Caribbean", "North America", "Sub-Saharan Africa", "East Asia & Pacific", "Middle East & North Africa","Europe & Central Asia","South Asia"])
+    .range(d3.schemeSet2);
+
 
     // Add X axis --> it is a date format
     var x = d3.scaleLinear()
@@ -137,23 +201,77 @@ d3.csv("https://raw.githubusercontent.com/gucoo/gucoo.github.io/main/data3.csv",
       .call(d3.axisLeft(y));
 
     // Initialize line with first group of the list
-    var line = svg
+
+   var line = svg
       .append('g')
       .append("path")
-        .datum(data.filter(function(d){return d.CountryName=="Hong Kong SAR, China"}))//selectedGroup[0]
+        .datum(data.filter(function(d){return d.CountryName=="Hong Kong SAR, China"}))//selectedGroup[0]//"Hong Kong SAR, China"
         .attr("d", d3.line()
           .x(function(d) { return x(d.Year) })
           .y(function(d) { return y(d.Value) })
         )
-        .attr("stroke", function(d){ return myColor("valueA") })
+        .attr("stroke", function(d){ return myColor(d[0].Region); })
         .style("stroke-width", 4)
-        .style("fill", "none")
+        .style("fill", function(d){ return "grey"; })
 
+      annotations[2].note.title = "4.Comparing: "+"Hong Kong SAR, China";
+      annotations[2].note.label = "\n"+"Sub-SaharanAfrica " +"\n--- "+"High income";
+
+    svg.selectAll("mycircle")
+    .append('g')   
+    .data(data.filter(function(d){return d.CountryName=="Yemen, Rep."}))//selectedGroup[0]
+    .enter()
+    .append("circle")
+    .attr("cx", function(d) { return x(d.Year); })
+    .attr("cy", function(d) { return y(d.Value); })
+    .attr("r", "4")
+    .style("fill", function (d) { return myColor(d.Region);})
+    .attr("stroke", "black")
+
+    svg.selectAll("mycircle")
+    .append('g')   
+    .data(data.filter(function(d){return d.CountryName=="Hong Kong SAR, China"}))//selectedGroup[0]
+    .enter()
+    .append("circle")
+    .attr("cx", function(d) { return x(d.Year); })
+    .attr("cy", function(d) { return y(d.Value); })
+    .attr("r", "4")
+    .style("fill", function (d) { return myColor(d.Region);})
+    .attr("stroke", "black")
+
+    svg
+      .append('g')
+      .append("path")
+        .datum(data.filter(function(d){return (d.CountryName=="Niger" && d.Region!="")}))//selectedGroup[0]
+        .attr("d", d3.line()
+          .x(function(d) { return x(d.Year) })
+          .y(function(d) { return y(d.Value) })
+        )
+        .attr("stroke", function(d){ return myColor(d[0].Region); })
+        .style("stroke-width", 4)
+        .style("fill", function(d){ return "none"; })
+
+      annotations[3].note.title = "3.Showing: "+"Hong Kong SAR, China";
+      annotations[3].note.label = "\n"+"Sub-SaharanAfrica " +"\n--- "+"High income";
+      
+  
     // A function that update the chart
     function update(selectedGroup) {
 
       // Create new data with the selection?
-      var dataFilter = data.filter(function(d){return d.CountryName==selectedGroup})
+      var dataFilter = data.filter(function(d){return (d.CountryName==selectedGroup && d.Region!="")})
+      console.log(dataFilter);
+
+      
+      console.log(annotations[2]);
+      annotations[2].note.title = "4.Comparing: "+selectedGroup;
+      annotations[2].note.label = "\n"+dataFilter[0].Region +"\n--- "+dataFilter[0].IncomeGroup;
+      
+      
+     d3.select("#my_dataviz")
+     .select("svg")
+     .append("g")
+     .call(makeAnnotations);
 
       // Give these new data to update line
       line
@@ -164,7 +282,7 @@ d3.csv("https://raw.githubusercontent.com/gucoo/gucoo.github.io/main/data3.csv",
             .x(function(d) { return x(d.Year) })
             .y(function(d) { return y(d.Value) })
           )
-          .attr("stroke", function(d){ return myColor(selectedGroup) })
+          .attr("stroke", function(d){ return myColor(d[0].Region); })
     }
 
     // When the button is changed, run the updateChart function
@@ -174,6 +292,19 @@ d3.csv("https://raw.githubusercontent.com/gucoo/gucoo.github.io/main/data3.csv",
         // run the updateChart function with this selected option
         update(selectedOption)
     })
+
+
+
+// Add annotation to the chart
+var makeAnnotations = d3.annotation()
+  .annotations(annotations);
+
+
+d3.select("#my_dataviz")
+.select("svg")
+  .append("g")
+  .call(makeAnnotations).editMode(true);
+    
 
 })
 
