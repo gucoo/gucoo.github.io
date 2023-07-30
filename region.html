@@ -8,6 +8,8 @@
 <!-- Load color scale -->
 <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 
+<!-- Load d3-annotation -->
+<script src="https://rawgit.com/susielu/d3-annotation/master/d3-annotation.min.js"></script>
 
 <!-- A bit of CSS: change stroke color of circle on hover (white -> black) -->
 <style>
@@ -47,20 +49,25 @@ body {
 
 <body>
 
-<h2>World Fertility Rate</h2>
-<p>Click on the below tab to see some intersting facts:</p>
+<h2>1960 - 2021 World Fertility Rate Birth per Woman</h2>
+<p>Scenes:Click on the below tab to see some intersting facts:</p>
 
 <div class="topnav">
-  <a href="index.html">Overview on Coutry Trend >></a>
-  <a href="highest.html">Highest Country >></a>
-  <a href="lowest.html">Lowest Country >> </a>  
-  <a href="income.html">Income Group >> </a>
-  <a class="active" href="region.html">Region >> </a>
+  <a href="index.html">1.Overview on Coutry Trend >></a>
+  <a href="highest.html">2.Recent Highest Country >></a>
+  <a href="lowest.html">3.Recent Lowest Country >> </a>  
+  <a href="income.html">4.Income Group >> </a>
+  <a class="active" href="region.html">5.Region</a>
 </div>
 
 <div style="padding-left:16px">
-  <h2>Top Navigation Example</h2>
-  <p>Lowest Fertility Rate in 2021</p>
+  <h2>Average Fertility Rate by Region Group yearly</h2>
+  <!-- Initialize a select button -->
+  <select id="selectButton"> 
+     <option selected="selected">Select Country to Add or Clean Dots</option>
+     <option>Clean</option>
+ </select>
+  <p>Select Country to Compare</p>
 <!-- Initialize a select button -->
 
 <!-- Create a div where the graph will take place -->
@@ -77,9 +84,9 @@ body {
 //https://d3-graph-gallery.com/graph/line_filter.html
 
 // set the dimensions and margins of the graph
-var margin = {top: 10, right: 30, bottom: 30, left: 60},
+var margin = {top: 50, right: 30, bottom: 30, left: 60},
     width = 1700 - margin.left - margin.right,
-    height = 400 - margin.top - margin.bottom;
+    height = 600 - margin.top - margin.bottom;
 
 // append the svg object to the body of the page
 var svg = d3.select("#my_dataviz")
@@ -90,12 +97,72 @@ var svg = d3.select("#my_dataviz")
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")");
 
+annotations = 
+[
+    {
+    note: { 
+      label: "Most Regions",
+      title: "1.Decreasing"
 
+},
+ color: ["red"],
+ //type: d3.annotationCalloutCircle,
+    x: 1000,
+    y: 400,
+    dy: -320,
+    dx: 320,
+    subject: { radius: 9, radiusPadding: 5 },
+    //connector: { end: "arrow" },
+  },
+{
+    note: { 
+      label: "North America",
+      title: "2.Increasing"},
+ color: ["orange"],
+ //type: d3.annotationCalloutCircle,
+    x: 770,
+    y: 490,
+    dy: 12,
+    dx: 12,
+    subject: { radius: 9, radiusPadding: 5 },
+    connector: { end: "arrow" },
+  },
+{
+    note: { 
+      label: "Most Regions",
+      title: "3.Convering"},
+ color: ["purple"],
+ type: d3.annotationCalloutCircle,
+    x: 1500,
+    y: 440,
+    dy: 40,
+    dx: 40,
+    subject: { radius: 50, radiusPadding: 10 },
+    connector: { end: "arrow" },
+  }
+]
 
 
 
 //Read the data
 d3.csv("https://raw.githubusercontent.com/gucoo/gucoo.github.io/main/region.csv", function(data) {
+d3.csv("https://raw.githubusercontent.com/gucoo/gucoo.github.io/main/data3.csv", function(data2) {
+
+console.log(data);
+console.log(data2);
+
+// List of groups (here I have one group per column)
+     var allGroup = d3.map(data2.filter(function(d){return (d.Region!="")}), function(d){return(d.CountryName)}).keys()
+    console.log(allGroup);
+    // add the options to the button
+    d3.select("#selectButton")
+      .selectAll('myOptions')
+      .data(allGroup)
+      .enter()
+      .append('option')
+      .text(function (d) { return d; }) // text showed in the menu
+      .attr("value", function (d) { return d; }) // corresponding value returned by the button
+
 
    // group the data: I want to draw one line per group
   var sumstat = d3.nest() // nest function allows to group the calculation per level of a factor
@@ -112,7 +179,7 @@ d3.csv("https://raw.githubusercontent.com/gucoo/gucoo.github.io/main/region.csv"
 
   // Add Y axis
   var y = d3.scaleLinear()
-    .domain([0, d3.max(data, function(d) { return +d.Value; })])
+    .domain([0, d3.max(data2, function(d) { return +d.Value; })])
     .range([ height, 0 ]);
   svg.append("g")
     .call(d3.axisLeft(y));
@@ -123,15 +190,60 @@ d3.csv("https://raw.githubusercontent.com/gucoo/gucoo.github.io/main/region.csv"
     .domain(["Latin America & Caribbean", "North America", "Sub-Saharan Africa", "East Asia & Pacific", "Middle East & North Africa","Europe & Central Asia","South Asia"])
     .range(d3.schemeSet2);
 
+// Add Z axis
+  var z = d3.scaleBand()
+    .domain(["","Low income","Lower middle income","Upper middle income","High income"])
+    .range([1,5]);
 
-  // Draw the line
+
+    // -1- Create a tooltip div that is hidden by default:
+  var tooltip = d3.select("#my_dataviz")
+    .append("div")
+      .style("opacity", 0)
+      .attr("class", "tooltip")
+      .style("background-color", "white")
+      .style("border", "solid")
+      .style("padding", "10px")
+      .style("color", "black")
+      .style("position", "absolute")
+      .style("border-radius", "5px")
+      .style("border-width", "1px")
+
+  // -2- Create 3 functions to show / update (when mouse move but stay on same circle) / hide the tooltip
+  var showTooltip = function(d) {
+    tooltip
+      .transition()
+      .duration(200)
+    tooltip
+      .style("opacity", 1)
+      .html(d.Year+"<br>Country: " + d.CountryName +
+                    "<br>Region: "+d.Region+"<br>IncomeGroup: "
+                      +d.IncomeGroup+"<br>Rate: "+d.Value)
+
+      .style("left", (d3.mouse(this)[0]+200) + "px")
+      .style("top", (d3.mouse(this)[1]+200) + "px")
+  }
+  var moveTooltip = function(d) {
+    tooltip
+      .style("left", (d3.mouse(this)[0]+200) + "px")
+      .style("top", (d3.mouse(this)[1]+200) + "px")
+  }
+  var hideTooltip = function(d) {
+    tooltip
+      .transition()
+      .duration(200)
+      .style("opacity", 0)
+  }
+
+
+ // Draw the line
   svg.selectAll(".line")
       .data(sumstat)
       .enter()
       .append("path")
         .attr("fill", "none")
         .attr("stroke", function(d){ return color(d.key) })
-        .attr("stroke-width", 1.5)
+        .attr("stroke-width", 7)
         .attr("d", function(d){
           return d3.line()
             .x(function(d) { return x(d.Year); })
@@ -139,7 +251,20 @@ d3.csv("https://raw.githubusercontent.com/gucoo/gucoo.github.io/main/region.csv"
             (d.values)
         })
 
- 
+ // Add dots
+  var dots = svg.append('g')
+    .selectAll("dot")
+    .data(data2)
+    .enter()
+    .append("circle")
+       .attr("cx", function (d) { return x(d.Year); } )
+       .attr("cy", function (d) { return y(d.Value); } )
+       .attr("r", 2)
+       .attr("r", function (d) { return  z(d.IncomeGroup); })
+      .style("fill", function (d) { return color(d.Region);})
+    .on("mouseover", showTooltip )
+    .on("mousemove", moveTooltip )
+    .on("mouseleave", hideTooltip )
 
  //legend 1
 
@@ -161,7 +286,80 @@ d3.select("#my_dataviz0").selectAll("mylabels")
     .text(function(d){ return d})
     .style("fill", function(d){ return color(d)})
     .attr("text-anchor", "left")
-    .style("alignment-baseline", "middle")   
+    .style("alignment-baseline", "middle") 
+
+//legend 2
+
+d3.select("#my_dataviz0").selectAll("mydots")
+  .data(["","Low income","Lower middle income","Upper middle income","High income"])
+  .enter()
+  .append("circle")
+    .attr("cx", 250)
+    .attr("cy", function(d,i){ return 10 + i*15}) // 100 is where the first dot appears. 25 is the distance between dots
+    .attr("r", function (d) { return z(d); })
+
+
+d3.select("#my_dataviz0").selectAll("mylabels")
+  .data(["NA","Low income","Lower middle income","Higher middle income","High income"])
+  .enter()
+  .append("text")
+    .attr("x", 270)
+    .attr("y", function(d,i){ return 10+ i*15}) // 100 is where the first dot appears. 25 is the distance between dots
+    .text(function(d){ return d})
+    .attr("text-anchor", "left")
+    .style("alignment-baseline", "middle")
+
+  
+////////////////////////////////////////////////////////////////
+
+
+// A function that update the chart
+function update(selectedGroup) {
+
+   
+      // Give these new data to update line
+    svg.selectAll("circle").remove();
+
+
+   svg.append('g')
+    .selectAll("dot")
+    .data(data2.filter(function(d){return d.CountryName==selectedGroup}))
+    .enter()
+    .append("circle")
+      .attr("cx", function (d) { return x(d.Year); } )
+      .attr("cy", function (d) { return y(d.Value); } )
+      .attr("r", function (d) { return  z(d.IncomeGroup); })
+      .style("fill", function(d){ return color(selectedGroup) })
+    .on("mouseover", showTooltip )
+    .on("mousemove", moveTooltip )
+    .on("mouseleave", hideTooltip )
+   
+    }
+
+    // When the button is changed, run the updateChart function
+    d3.select("#selectButton").on("change", function(d) {
+        // recover the option that has been chosen
+        var selectedOption = d3.select(this).property("value")
+        // run the updateChart function with this selected option
+        update(selectedOption)
+    })
+
+
+
+// Add annotation to the chart
+var makeAnnotations = d3.annotation()
+  .annotations(annotations);
+
+
+d3.select("#my_dataviz")
+.select("svg")
+  .append("g")
+  .call(makeAnnotations)//.editMode(true);
+
+
+
+
+})
 
 })
 
