@@ -72,8 +72,8 @@ body {
   <a href="lowest.html">Lowest Country >> </a>
 
   
-  <a href="test2.html">Income Group >> </a>
-  <a href="#about">About >> </a>
+  <a href="income.html">Income Group >> </a>
+  <a href="region.html">Region >> </a>
 </div>
 
 <div style="padding-left:16px">
@@ -148,12 +148,12 @@ d3.csv("https://raw.githubusercontent.com/gucoo/gucoo.github.io/main/data3.csv",
 
   //
   var z = d3.scaleBand()
-    .domain(["","Low income","Lower middle income","Higher middle income","High income"])
+    .domain(["","Low income","Lower middle income","Upper middle income","High income"])
     .range([1,5]);
 
   // Add a scale for bubble color
   var myColor = d3.scaleOrdinal()
-    .domain(["","Latin America & Caribbean", "North America", "Sub-Saharan Africa", "East Asia & Pacific", "Middle East & North Africa","Europe & Central Asia","South Asia"])
+    .domain(["Latin America & Caribbean", "North America", "Sub-Saharan Africa", "East Asia & Pacific", "Middle East & North Africa","Europe & Central Asia","South Asia"])
     .range(d3.schemeSet2);
 
 
@@ -246,7 +246,7 @@ d3.csv("https://raw.githubusercontent.com/gucoo/gucoo.github.io/main/data3.csv",
 //legend 1
 
 d3.select("#my_dataviz0").selectAll("mydots")
-  .data(["","Latin America & Caribbean", "North America", "Sub-Saharan Africa", "East Asia & Pacific", "Middle East & North Africa","Europe & Central Asia","South Asia"])
+  .data(["Latin America & Caribbean", "North America", "Sub-Saharan Africa", "East Asia & Pacific", "Middle East & North Africa","Europe & Central Asia","South Asia"])
   .enter()
   .append("circle")
     .attr("cx", 10)
@@ -255,7 +255,7 @@ d3.select("#my_dataviz0").selectAll("mydots")
     .style("fill", function(d){ return myColor(d)})
 
 d3.select("#my_dataviz0").selectAll("mylabels")
-  .data(["NA","Latin America & Caribbean", "North America", "Sub-Saharan Africa", "East Asia & Pacific", "Middle East & North Africa","Europe & Central Asia","South Asia"])
+  .data(["Latin America & Caribbean", "North America", "Sub-Saharan Africa", "East Asia & Pacific", "Middle East & North Africa","Europe & Central Asia","South Asia"])
   .enter()
   .append("text")
     .attr("x", 30)
@@ -268,7 +268,7 @@ d3.select("#my_dataviz0").selectAll("mylabels")
 //legend 2
 
 d3.select("#my_dataviz0").selectAll("mydots")
-  .data(["","Low income","Lower middle income","Higher middle income","High income"])
+  .data(["","Low income","Lower middle income","Upper middle income","High income"])
   .enter()
   .append("circle")
     .attr("cx", 250)
