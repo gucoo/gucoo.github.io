@@ -56,24 +56,16 @@ body {
 
 <body>
 
-<h2>World Fertility Rate</h2>
+<h2>1960 - 2021 World Fertility Rate Birth per Woman</h2>
 <p>Scenes:Click on the below tab to see some intersting facts:</p>
 
 
 <div class="topnav">
-  <a class="active" href="index.html">Overview on Coutry Trend >></a>
-
-  <!-- https://d3-graph-gallery.com/graph/line_filter.html  
-     <a href="main.html">Main >> </a>  
-      <a href="test.html">Country Trend >></a>-->
- 
-
-  <a href="highest.html">Highest Country >></a>
-  <a href="lowest.html">Lowest Country >> </a>
-
-  
-  <a href="income.html">Income Group >> </a>
-  <a href="region.html">Region >> </a>
+  <a class="active" href="index.html">1.Overview on Coutry Trend >></a>
+  <a href="highest.html">2.Recent Highest Country >></a>
+  <a href="lowest.html">3.Recent Lowest Country >> </a>  
+  <a href="income.html">4.Income Group >> </a>
+  <a href="region.html">5.Region</a>
 </div>
 
 <div style="padding-left:16px">
@@ -146,7 +138,7 @@ d3.csv("https://raw.githubusercontent.com/gucoo/gucoo.github.io/main/data3.csv",
   svg.append("g")
     .call(d3.axisLeft(y));
 
-  //
+  // Add Z axis
   var z = d3.scaleBand()
     .domain(["","Low income","Lower middle income","Upper middle income","High income"])
     .range([1,5]);
@@ -207,7 +199,7 @@ d3.csv("https://raw.githubusercontent.com/gucoo/gucoo.github.io/main/data3.csv",
           .x(function(d) { return x(d.Year) })
           .y(function(d) { return y(d.Value) })
         )
-        .attr("stroke", function(d){ return myColor("valueA") })
+        .attr("stroke", function(d){ return myColor(d.Region) })
         .style("stroke-width", 4)
         .style("fill", "none")
 
@@ -320,12 +312,12 @@ d3.select("#my_dataviz0").selectAll("mylabels")
 const annotations = [
   {
     note: { 
-      label: "1985 Yemen 8.864",
+      label: "1985 Yemen Low Income 8.864",
       title: "1.1960 -2021 History highest"
 
 },
  color: ["red"],
- //type: d3.annotationCalloutCircle,
+ type: d3.annotationCalloutCircle,
     x: 690,
     y: 160,
     dy: -12,
@@ -336,11 +328,11 @@ const annotations = [
 
  {
     note: { 
-      label: "2021 Hong Knog 0.772",
+      label: "2021 Hong Knog High Income 0.772",
       title: "2.1960 -2021 History lowest"},
  color: ["red"],
- //type: d3.annotationCalloutCircle,
-    x: 1600,
+ type: d3.annotationCalloutCircle,
+    x: 1590,
     y: 1270,
     dy: 12,
     dx: -12,
@@ -349,7 +341,7 @@ const annotations = [
   },
 
 
-{
+/*{
     note: {
       label: "Dropping by years",
       title: "3.Trend"
@@ -365,7 +357,7 @@ const annotations = [
     y: 300,
     dy: -220,
     dx: -220
-  }
+  }*/
 
 
 ];
