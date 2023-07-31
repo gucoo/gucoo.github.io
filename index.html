@@ -70,12 +70,14 @@ body {
 
 <div style="padding-left:16px">
   <h2>Overview</h2>
+
 <!-- Initialize a select button -->
   <select id="selectButton">
-<option selected="selected">Select Country to Add Line</option>
+
+<option selected="selected">Select Country to highlight the Line</option>
   </select>
   <p>Data for all years and countries</p>
-  
+  <p>Select Country to highlight the Line</p>
   <!-- Create a div where the graph will take place -->
   <svg id="my_dataviz0" height=130 width=900></svg>
   <div id="my_dataviz"></div>
@@ -310,6 +312,24 @@ d3.select("#my_dataviz0").selectAll("mylabels")
 
 //////////////////////////////////////////////////////////////////Annotation 
 const annotations = [
+
+
+{
+    note: { 
+      label: "Highest fertility rate in the first 9 years",
+      title: "1960-1969 Marshall Islands"
+
+},
+ color: ["orange"],
+ //type: d3.annotationCalloutCircle,
+    x: 210,
+    y: 200,
+    dy: -12,
+    dx: -12,
+    //subject: { radius: 9, radiusPadding: 5 },
+    //connector: { end: "arrow" },
+  },
+
   {
     note: { 
       label: "1985 Yemen Low Income 8.864",
